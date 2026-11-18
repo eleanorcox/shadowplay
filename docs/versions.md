@@ -28,6 +28,6 @@ Template:
 
 - **Date:** 18 November 2026
 - **Tag:** `v1`
-- **Screencast:** `Screencast from 18-11-26 13:55:11.webm` (two earlier takes the same afternoon, 13:45:33 and 13:54:18)
+- **Screencast:** `Screencast from 18-11-26 13:55:11.webm`, showing the three animals. (`13:54:18` the same afternoon is a broken take; not used.)
 - **What it could do:** A lamp-lit wall showing the shadows of your hands, drawn from the hand points. Three one-handed puppets (rabbit, duck, dog) that come alive when held: an eye opens and blinks, and the duck and dog speak as the beak or mouth opens. Cards with stars and a closeness bar, kind hints, and a demonstration hand when nobody is there.
 - **How it felt compared with the last version:** The first version, and the first time it met real hands in front of a webcam. Eleanor's impressions are still to be written here.
