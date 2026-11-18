@@ -8,7 +8,7 @@ As of 18 November 2026:
 
 | Stage | Status |
 | --- | --- |
-| 1, a rabbit on the wall | Built; waiting to be tried with real hands |
+| 1, a rabbit on the wall | Done; recorded as v1 |
 | 2, the installation loop | Software mostly built ahead of plan; needs real hands, children and kiosk set-up |
 | 3, puppets that come alive | Not started |
 | 4, two-handed puppets | Not started |
@@ -30,7 +30,7 @@ Facts that shape the order:
 
 ### Stage 1: a rabbit on the wall
 
-*Status, 18 November 2026: built and tested on model-hand examples, and screenshots taken ([screenshots](screenshots/README.md)). Not yet tried in front of a real camera, so the thresholds are unchecked.*
+*Status, 18 November 2026: built and tested on model-hand examples, screenshots taken ([screenshots](screenshots/README.md)), tried by Eleanor with a webcam and recorded as v1. There are no recordings of real hand points yet, so the thresholds are still unchecked.*
 
 The screen is a lamp-lit wall. Your hand's shadow falls on it. Make the rabbit and it comes alive: an eye opens and blinks.
 
