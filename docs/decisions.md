@@ -39,7 +39,8 @@ Template:
 | [8](#8-a-model-hand-draws-the-lessons-and-the-demo) | A model hand draws the lessons, the demo and the test examples | 18 Nov 2026 | Decided |
 | [9](#9-puppets-are-lists-of-kind-checks) | Puppets are lists of checks, each with a kind hint | 18 Nov 2026 | Decided |
 | [10](#10-first-puppets-rabbit-duck-dog) | First puppets: rabbit, duck, dog | 18 Nov 2026 | Built |
-| [11](#11-four-more-puppets-including-two-handed-ones) | Four more puppets, including two-handed ones | 18 Nov 2026 | Built |
+| [11](#11-four-more-puppets-including-two-handed-ones) | Four more puppets, including two-handed ones | 18 Nov 2026 | Swan and bird replaced by 12; the rest built |
+| [12](#12-puppets-must-look-different-and-not-all-animals) | Puppets must look different, and not all be animals | 18 Nov 2026 | Built |
 
 ## 1. Working name: Shadowplay
 
@@ -134,8 +135,17 @@ Template:
 ## 11. Four more puppets, including two-handed ones
 
 - **Date:** 18 November 2026
-- **Status:** Built
+- **Status:** The swan and the bird replaced by [12](#12-puppets-must-look-different-and-not-all-animals); the spider, the butterfly and pairing hands stay
 - **What prompted it:** Eleanor asked for more shadow puppets after recording v1.
 - **Decision:** Add the swan and the spider (one hand) and the bird and the butterfly (two hands), making seven. The swan is the duck's hand drooping down from the wrist, so the forearm becomes the neck; telling it from the duck is only a matter of which way the hand points, which turned out easier than decision 10 expected. The spider is a hand hanging down with its fingers spread as legs. The bird and the butterfly both hook the thumbs together; the bird holds its fingers together and out to the sides, the butterfly spreads them and points them up and out. Two hands are paired by the stage: every pair of hands in view is scored against the two-handed puppets, and a pair claims its two hands while it is alive, or while it scores at least as well as either hand alone, less a small edge (0.1) in the pair's favour. The edge is needed because each of the bird's hands is, on its own, a perfect dog. A hand belongs to at most one pair.
 - **Alternatives considered:** The snail and the crocodile (two hands overlapping, which the hand tracker handles badly); the deer (antlers from spread fingers, too close to the butterfly); pairing hands only when their wrists are close (two people can make a butterfly together, and the thumbs check already rules out unrelated hands).
 - **What follows from it:** The timing rules (hold, let go, hints) moved into a `Performer` shared by single hands and pairs. The two-handed puppets have not met real hands: whether MediaPipe tracks two hands well when the thumbs are hooked is unchecked, and is the first thing to try. Stage 4 of the roadmap (two-handed puppets) is mostly done ahead of order.
+
+## 12. Puppets must look different, and not all be animals
+
+- **Date:** 18 November 2026
+- **Status:** Built
+- **What prompted it:** Eleanor tried the seven puppets. The duck and the swan were hard to tell apart (the same hand, pointing a different way, and the shadows look alike). She could not make the bird work, and it was too like the butterfly. She asked for puppets that are not animals, having seen people make other kinds of shadow.
+- **Decision:** Take out the swan and the bird. Add four things that are not animals: the **candle** (one finger up; a flame lights on the tip), the **tree** (hand held high, fingers spread as branches, the arm as the trunk; leaves grow), the **walker** (two fingers down as legs, the others held by the thumb; once alive, the arm goes and it grows a head, so it is a little person walking) and the **heart** (two hands, thumbs touching at the bottom and index fingertips at the top; it glows and beats). Nine puppets: rabbit, dog, duck, spider and butterfly, then walker, candle, tree and heart. The rule from now on: **two puppets must cast shadows that look different**, not just differ in which way the hand points. The walker is the rabbit upside down and the spider is the tree upside down, which breaks the letter of that rule, but here the shadows look nothing alike (a rabbit's head against a person's legs, a hanging spider against a tree on its trunk), and "turn it upside down and it becomes something else" is a nice thing to discover.
+- **Alternatives considered:** Keeping the swan with a clearer picture (it would still be the duck's hand); scissors (two fingers sideways: the rabbit turned on its side, and the shadow is not distinctive); a face in profile and other people from the old books (they need both hands held carefully and are hard to recognise from hand points); a person's head with a hat (the same).
+- **What follows from it:** Spread is now measured across the palm only, so curled fingers (a heart, a half-made rabbit) no longer look spread; and each finger has a whole-finger curl that counts the knuckle, so a tree needs every finger right out. Both were found while adding these puppets: an opened heart scored as a butterfly, and a rabbit with half-folded fingers scored as a tree. The hand positions are the common ones, from memory (unchecked).

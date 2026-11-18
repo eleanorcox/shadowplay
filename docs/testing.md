@@ -14,7 +14,7 @@ We build this test-first: a failing test before every change in behaviour and ev
 
 ## What exists today
 
-- 54 tests in seven files, run with Vitest by `npm test`. They cover the model hand, describing a pose, recognising and hinting each puppet for either hand at several sizes, two-handed puppets (and that unrelated hands, or two dogs facing each other, are not one), pairing hands on the stage, the stage over time, the demonstration (a full loop makes every puppet, recognised by a real stage), the still scenes, and the camera adapter's units. `examples.test.ts` checks every recording in `src/core/examples/` against its file name.
+- 61 tests in seven files, run with Vitest by `npm test`. They cover the model hand, describing a pose, recognising and hinting each puppet for either hand at several sizes, two-handed puppets (and that unrelated hands, or two dogs facing each other, are not one), pairing hands on the stage, the stage over time, the demonstration (a full loop makes every puppet, recognised by a real stage), the still scenes, and the camera adapter's units. `examples.test.ts` checks every recording in `src/core/examples/` against its file name.
 - Nothing tests the drawing; it is checked with fixed scenes and [screenshots](screenshots/README.md).
 - There are no recordings of real hands yet.
 
@@ -40,7 +40,7 @@ The model hand's poses are idealised; real hands are not. Press **R** while the 
 ### Stage 4
 
 - Each two-handed pose is recognised as itself and not as the other, whichever order the hands are listed in.
-- Two people's separate puppets are not a pair; a bird's hands are a bird, not two dogs.
+- Two people's separate puppets are not a pair; a butterfly's hands are a butterfly, not two trees.
 - When the hands part, the pair ends and each hand is its own again.
 
 ### Stage 2

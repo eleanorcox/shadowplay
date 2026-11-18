@@ -48,6 +48,7 @@ export class Wall {
   private height = 0;
   private lastAction = new Map<number, number>();
   private said: Said[] = [];
+  private puffs: { x: number; y: number; size: number; born: number }[] = [];
   /** Each puppet's card picture, drawn once. */
   private cardPictures = new Map<PuppetId, HTMLCanvasElement>();
 
@@ -72,6 +73,7 @@ export class Wall {
     for (const group of this.groups(showing)) this.drawShadow(group, view, time, fade);
     if (!stage.waiting) for (const group of this.groups(stage)) this.drawHint(group, view);
     this.drawSaid(time);
+    this.drawPuffs(time);
 
     this.drawCards(stage, strip, time);
     if (stage.waiting) this.drawInvitation(time);
@@ -149,14 +151,20 @@ export class Wall {
     // The hands are drawn solid on their own layer, then laid on the wall softened, so overlaps do not darken.
     lc.clearRect(0, 0, this.width, this.height);
     lc.fillStyle = COLOURS.shadow;
+    const puppet = state.alive ? PUPPETS.find((p) => p.id === state.alive) : undefined;
+    // A live walker is a little person: its arm goes and it grows a head, so the back of the hand is its body.
+    const person = puppet?.id === 'walker';
     let palm = 0;
     for (const hand of group.hands) {
       const size = palmLength(hand.points) * view.scale;
       palm = Math.max(palm, size);
-      fillHand(lc, hand.points.map(view.at), size);
+      const points = hand.points.map(view.at);
+      fillHand(lc, points, size, 0, !person);
+      if (person) this.head(lc, points, size, state.aliveFor);
     }
-    const puppet = state.alive ? PUPPETS.find((p) => p.id === state.alive) : undefined;
     if (puppet) this.cutEyes(lc, puppet, group, view, time, palm);
+    // Leaves are part of the shadow, so they are drawn on the same layer.
+    if (puppet?.id === 'tree') this.leaves(lc, group, view, palm, time);
 
     ctx.save();
     ctx.globalAlpha = 0.9 * Math.min(...group.hands.map((h) => h.presence)) * fade;
@@ -166,8 +174,121 @@ export class Wall {
 
     if (!puppet) return;
     if (puppet.id === 'butterfly') this.feelers(group, view, palm, time);
+    if (puppet.id === 'candle') this.flame(group, view, palm, time);
+    if (puppet.id === 'heart') this.glow(group, view, palm, time);
+    if (puppet.id === 'walker') this.steps(group, view, palm, time);
     this.celebrate(group, view, palm);
     if (SAYS[puppet.id]) this.listen(group, view, SAYS[puppet.id]!, time);
+  }
+
+  /** A round head on a short neck, above the walker's body, growing in as it comes alive. */
+  private head(lc: CanvasRenderingContext2D, points: Pt[], palm: number, aliveFor: number): void {
+    const wrist = points[0]!;
+    const knuckle = points[9]!;
+    const length = Math.hypot(wrist.x - knuckle.x, wrist.y - knuckle.y) || 1;
+    const [ux, uy] = [(wrist.x - knuckle.x) / length, (wrist.y - knuckle.y) / length];
+    const grow = Math.min(1, aliveFor / 0.4);
+    const centre = { x: wrist.x + ux * palm * 0.6 * grow, y: wrist.y + uy * palm * 0.6 * grow };
+    lc.save();
+    lc.strokeStyle = lc.fillStyle = COLOURS.shadow;
+    lc.lineWidth = palm * 0.28;
+    lc.lineCap = 'round';
+    lc.beginPath();
+    lc.moveTo(wrist.x, wrist.y);
+    lc.lineTo(centre.x, centre.y);
+    lc.stroke();
+    lc.beginPath();
+    lc.arc(centre.x, centre.y, palm * 0.36 * grow, 0, Math.PI * 2);
+    lc.fill();
+    lc.restore();
+  }
+
+  /** A candle flame on the fingertip: it flickers, and lights the wall around it. */
+  private flame(group: Group, view: View, palm: number, time: number): void {
+    const hand = group.hands[0]!;
+    const tip = view.at(hand.points[8]!);
+    const below = view.at(hand.points[7]!);
+    // Flames rise whichever way the finger leans, but start from its tip.
+    const grow = Math.min(1, group.state.aliveFor / 0.5);
+    const flicker = 1 + 0.08 * Math.sin(time * 23) + 0.05 * Math.sin(time * 37 + 1);
+    const h = palm * 0.55 * grow * flicker;
+    const w = palm * 0.17 * grow;
+    const base = { x: tip.x + (tip.x - below.x) * 0.3, y: tip.y + (tip.y - below.y) * 0.3 - palm * 0.05 };
+    const sway = Math.sin(time * 5.3) * palm * 0.03;
+    const { ctx } = this;
+    ctx.save();
+    const light = ctx.createRadialGradient(base.x, base.y - h * 0.4, 0, base.x, base.y - h * 0.4, palm * 2.2);
+    light.addColorStop(0, `rgba(255, 214, 120, ${0.45 * grow})`);
+    light.addColorStop(1, 'rgba(255, 214, 120, 0)');
+    ctx.fillStyle = light;
+    ctx.fillRect(base.x - palm * 2.2, base.y - h * 0.4 - palm * 2.2, palm * 4.4, palm * 4.4);
+    const body = ctx.createLinearGradient(base.x, base.y, base.x, base.y - h);
+    body.addColorStop(0, '#fff3c4');
+    body.addColorStop(0.5, '#ffc04d');
+    body.addColorStop(1, 'rgba(255, 120, 40, 0.6)');
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.moveTo(base.x, base.y);
+    ctx.bezierCurveTo(base.x - w, base.y - h * 0.15, base.x - w * 0.6 + sway, base.y - h * 0.7, base.x + sway, base.y - h);
+    ctx.bezierCurveTo(base.x + w * 0.6 + sway, base.y - h * 0.7, base.x + w, base.y - h * 0.15, base.x, base.y);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** Leaves gather round the fingertips, the tree's branches, and stir in the wind. */
+  private leaves(lc: CanvasRenderingContext2D, group: Group, view: View, palm: number, time: number): void {
+    const hand = group.hands[0]!;
+    const grow = Math.min(1, group.state.aliveFor / 0.8);
+    lc.save();
+    lc.fillStyle = COLOURS.shadow;
+    for (const [n, i] of [4, 8, 12, 16, 20].entries()) {
+      const tip = view.at(hand.points[i]!);
+      const joint = view.at(hand.points[i - 1]!);
+      // A small cluster round each tip, placed the same way every frame so it does not jump about.
+      for (let k = 0; k < 5; k++) {
+        const angle = n * 1.9 + k * 1.26;
+        const reach = palm * (0.12 + 0.07 * ((k * 7 + n * 3) % 4)) * grow;
+        const stir = Math.sin(time * 2.1 + n + k) * palm * 0.02;
+        const x = tip.x + (tip.x - joint.x) * 0.2 + Math.cos(angle) * reach + stir;
+        const y = tip.y + (tip.y - joint.y) * 0.2 + Math.sin(angle) * reach;
+        lc.beginPath();
+        lc.ellipse(x, y, palm * 0.11 * grow, palm * 0.065 * grow, angle, 0, Math.PI * 2);
+        lc.fill();
+      }
+    }
+    lc.restore();
+  }
+
+  /** The inside of a heart glows warm and beats. */
+  private glow(group: Group, view: View, palm: number, time: number): void {
+    const points = group.hands.flatMap((h) => [h.points[4]!, h.points[8]!, h.points[5]!].map(view.at));
+    const centre = { x: points.reduce((s, p) => s + p.x, 0) / points.length, y: points.reduce((s, p) => s + p.y, 0) / points.length };
+    // Lub-dub: two quick swells about once a second.
+    const phase = (time * 1.1) % 1;
+    const thump = (at: number) => Math.exp(-(((phase - at) / 0.06) ** 2));
+    const beat = 0.8 + 0.2 * Math.max(thump(0.1), 0.7 * thump(0.3));
+    const r = palm * 0.9 * beat * Math.min(1, group.state.aliveFor / 0.5);
+    const { ctx } = this;
+    ctx.save();
+    const light = ctx.createRadialGradient(centre.x, centre.y, 0, centre.x, centre.y, r);
+    light.addColorStop(0, 'rgba(255, 120, 110, 0.75)');
+    light.addColorStop(0.6, 'rgba(255, 140, 110, 0.3)');
+    light.addColorStop(1, 'rgba(255, 140, 110, 0)');
+    ctx.fillStyle = light;
+    ctx.fillRect(centre.x - r, centre.y - r, r * 2, r * 2);
+    ctx.restore();
+  }
+
+  /** A puff of dust under the walker's feet at each step. */
+  private steps(group: Group, view: View, palm: number, time: number): void {
+    const before = this.lastAction.get(group.key) ?? 0;
+    this.lastAction.set(group.key, group.state.action);
+    if (before < 0.6 && group.state.action >= 0.6) {
+      const hand = group.hands[0]!;
+      const feet = [hand.points[8]!, hand.points[12]!].map(view.at);
+      const lower = feet[0]!.y > feet[1]!.y ? feet[0]! : feet[1]!;
+      this.puffs.push({ x: lower.x, y: lower.y + palm * 0.08, size: palm, born: time });
+    }
   }
 
   /** Eyes are holes in the shadow where the lamp shines through. They open as the puppet comes alive, and blink. */
@@ -238,6 +359,23 @@ export class Wall {
       const tip = view.at(group.hands[0]!.points[8]!);
       this.said.push({ text, x: tip.x, y: tip.y, born: time });
     }
+  }
+
+  private drawPuffs(time: number): void {
+    const { ctx } = this;
+    this.puffs = this.puffs.filter((p) => time - p.born < 0.8);
+    ctx.save();
+    ctx.fillStyle = COLOURS.shadow;
+    for (const p of this.puffs) {
+      const age = (time - p.born) / 0.8;
+      ctx.globalAlpha = 0.35 * (1 - age);
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.arc(p.x + side * p.size * (0.08 + 0.25 * age), p.y - p.size * 0.05 * age, p.size * (0.04 + 0.06 * age), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
   }
 
   private drawSaid(time: number): void {

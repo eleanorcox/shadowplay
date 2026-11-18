@@ -27,7 +27,7 @@ Two ways to tell what shape your hands are making:
 
 ## Lessons for a set of puppets
 
-A handful to start: rabbit, dog, swan, bird, snail, crocodile. Each lesson has a picture of the hands, the shadow it makes, and steps.
+Started with rabbit, duck and dog; now also spider, butterfly, walker, candle, tree and heart. Other candidates: snail, crocodile, a face in profile. Two puppets must cast shadows that look different ([decision 12](decisions.md#12-puppets-must-look-different-and-not-all-animals)). Each lesson has a picture of the hands, the shadow it makes, and steps.
 
 ## Feedback on what to change
 

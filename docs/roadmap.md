@@ -11,7 +11,7 @@ As of 18 November 2026:
 | 1, a rabbit on the wall | Done; recorded as v1 |
 | 2, the installation loop | Software mostly built ahead of plan; needs real hands, children and kiosk set-up |
 | 3, puppets that come alive | Not started |
-| 4, two-handed puppets | Bird and butterfly built ahead of order; not yet tried with real hands |
+| 4, two-handed puppets | Butterfly and heart built ahead of order; not yet tried with real hands |
 | 5, real shadows with a projector | Needs a projector |
 
 Facts that shape the order:
@@ -42,7 +42,7 @@ The screen is a lamp-lit wall. Your hand's shadow falls on it. Make the rabbit a
 
 *Status, 18 November 2026: the duck, the dog, the cards with stars and a closeness bar, hints, the waiting-screen demonstration and the camera reconnecting were built alongside stage 1, since they were cheap once the core existed. Still to do: recordings of real hands as test examples, trying it with children, and kiosk set-up on the installation computer.*
 
-The duck and the dog join the rabbit (and, since, the swan and the spider). Cards along the bottom show them all; the one you are nearest to lights up and says what to change. Nobody in view for a while, and the wall plays a demonstration and clears the stars.
+The duck and the dog join the rabbit (and, since, the spider, the walker, the candle and the tree). Cards along the bottom show them all; the one you are nearest to lights up and says what to change. Nobody in view for a while, and the wall plays a demonstration and clears the stars.
 
 - **Shows:** what a visitor with no instructions does.
 - **Decides:** how forgiving recognition has to be, after trying it with children.
@@ -54,9 +54,9 @@ Each puppet has something to do once made, and a little scene: grass grows under
 
 ### Stage 4: two-handed puppets
 
-*Status, 18 November 2026: the bird and the butterfly are built, with hands paired by the stage ([decision 11](decisions.md#11-four-more-puppets-including-two-handed-ones)). Still to find out: whether the tracker keeps both hands when the thumbs are hooked.*
+*Status, 18 November 2026: the butterfly and the heart are built, with hands paired by the stage ([decision 11](decisions.md#11-four-more-puppets-including-two-handed-ones)); the bird was tried and taken out ([decision 12](decisions.md#12-puppets-must-look-different-and-not-all-animals)). Still to find out: whether the tracker keeps both hands when the thumbs touch.*
 
-The bird and the butterfly (thumbs hooked together, fingers flapping), perhaps the deer. Hands are paired by how close they are.
+The butterfly (thumbs hooked together, fingers flapping) and the heart. Hands are paired when together they match a two-handed puppet better than either does alone.
 
 ### Stage 5: real shadows with a projector
 

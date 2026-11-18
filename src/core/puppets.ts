@@ -1,10 +1,10 @@
 // The puppets: what each one checks for, the hint for each check, how the model hand makes it, where its eyes
 // go and what it does once made. The hand positions are the common ones, from memory (unchecked).
 import type { Description, PairDescription } from './describe';
-import { mix, TIP, type Landmark } from './hand';
+import { FINGER_JOINTS, mix, TIP, type Landmark } from './hand';
 import { modelHand, openHand, type FingerPose, type Pose } from './handModel';
 
-export type PuppetId = 'rabbit' | 'duck' | 'dog' | 'swan' | 'spider' | 'bird' | 'butterfly';
+export type PuppetId = 'rabbit' | 'dog' | 'duck' | 'spider' | 'walker' | 'candle' | 'tree' | 'butterfly' | 'heart';
 
 export interface Check<D = Description> {
   measure: (d: D) => number;
@@ -48,6 +48,8 @@ export interface PairPuppet {
 export type Puppet = OneHandedPuppet | PairPuppet;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+/** How spread the fingers are: the average angle between neighbours. */
+const spread = (d: Description) => (d.apart[0] + d.apart[1] + d.apart[2]) / 3;
 const straight = (knuckle = 0): FingerPose => ({ knuckle, curl: 0 });
 const folded = (): FingerPose => ({ knuckle: 1.4, curl: 1.4 });
 
@@ -61,7 +63,7 @@ const rabbit: OneHandedPuppet = {
       range: [0, 0.3],
       margin: 0.35,
       // The ears are what make it a rabbit rather than a fist.
-      weight: 1.5,
+      weight: 2,
       hint: 'Stand two fingers up straight for the ears',
     },
     {
@@ -74,10 +76,12 @@ const rabbit: OneHandedPuppet = {
       measure: (d) => Math.min(d.touch[2], d.touch[3]),
       range: [0, 0.5],
       margin: 0.5,
+      // Without the thumb holding the folded fingers it is a peace sign, not a rabbit.
+      weight: 1.5,
       hint: 'Touch your thumb to your folded fingers',
     },
-    // Ears to the side still counts; upside down does not.
-    { measure: (d) => d.pointing, range: [0, 0.9], margin: 0.9, hint: 'Point the ears up to the sky' },
+    // Upside down, the same hand is the walker.
+    { measure: (d) => d.pointing, range: [0, 0.9], margin: 0.8, weight: 2, hint: 'Point the ears up to the sky' },
   ],
   pose: () => ({
     ...openHand(),
@@ -109,7 +113,7 @@ const duck: OneHandedPuppet = {
       margin: 0.35,
       hint: 'Tuck your thumb underneath your fingers',
     },
-    // Pointing down instead makes a swan, so this matters more.
+    // Pointing sideways is what makes a hand a duck rather than just a hand.
     { measure: (d) => d.pointing, range: [0.9, 2.1], margin: 0.5, weight: 1.5, hint: 'Point your hand to the side' },
   ],
   pose: (action) => ({
@@ -162,28 +166,6 @@ const dog: OneHandedPuppet = {
   action: (d) => clamp01((d.mouth - 0.45) / 0.35),
 };
 
-const swan: OneHandedPuppet = {
-  hands: 1,
-  id: 'swan',
-  name: 'Swan',
-  checks: [
-    { measure: (d) => Math.max(...d.bend), range: [0, 0.3], margin: 0.35, hint: 'Keep your fingers straight' },
-    // Tighter than the duck's, so a spider's spread legs are not a swan.
-    { measure: (d) => Math.max(...d.apart), range: [0, 0.2], margin: 0.2, hint: 'Hold your fingers together' },
-    {
-      measure: (d) => Math.min(d.touch[0], d.touch[1]),
-      range: [0, 0.8],
-      margin: 0.25,
-      hint: 'Touch your thumb to your fingertips for a beak',
-    },
-    // The arm is the neck, so the hand droops down from the wrist.
-    { measure: (d) => d.pointing, range: [2.3, Math.PI], margin: 0.5, weight: 1.5, hint: 'Lift your arm and let your hand droop down' },
-  ],
-  pose: (action) => ({ ...duck.pose(action), turn: -2.6, x: 0.78, y: 0.3 }),
-  eyes: [[[5, 2], [9, 1.5], [6, 1]]],
-  action: duck.action,
-};
-
 const spider: OneHandedPuppet = {
   hands: 1,
   id: 'spider',
@@ -191,7 +173,7 @@ const spider: OneHandedPuppet = {
   checks: [
     { measure: (d) => d.pointing, range: [2.4, Math.PI], margin: 0.6, weight: 1.5, hint: 'Hang your hand down, fingers to the floor' },
     {
-      measure: (d) => (d.apart[0] + d.apart[1] + d.apart[2]) / 3,
+      measure: spread,
       range: [0.2, Math.PI],
       margin: 0.12,
       hint: 'Spread your fingers out like legs',
@@ -217,6 +199,93 @@ const spider: OneHandedPuppet = {
   ],
 };
 
+const walker: OneHandedPuppet = {
+  hands: 1,
+  id: 'walker',
+  name: 'Walker',
+  checks: [
+    {
+      measure: (d) => Math.max(d.bend[0], d.bend[1]),
+      range: [0, 0.3],
+      margin: 0.35,
+      weight: 1.5,
+      hint: 'Stretch two fingers out straight for legs',
+    },
+    { measure: (d) => Math.min(d.bend[2], d.bend[3]), range: [0.55, 1], margin: 0.4, hint: 'Fold your other two fingers down' },
+    { measure: (d) => Math.min(d.touch[2], d.touch[3]), range: [0, 0.5], margin: 0.5, hint: 'Hold your folded fingers with your thumb' },
+    // The rabbit turned upside down.
+    { measure: (d) => d.pointing, range: [2.3, Math.PI], margin: 0.6, weight: 1.5, hint: 'Point your two fingers down to the ground' },
+  ],
+  pose: (action) => {
+    // One leg forward and the other back, swapping as `action` goes from 0 to 1.
+    const stride = 0.3 * (1 - 2 * action);
+    return {
+      ...rabbit.pose(0),
+      fingers: {
+        index: { knuckle: 0, curl: 0, lean: stride },
+        middle: { knuckle: 0, curl: 0, lean: -stride },
+        ring: folded(),
+        little: folded(),
+      },
+      turn: Math.PI + 0.1,
+      // Low enough that the head it grows when it comes alive stays on the wall.
+      x: 0.62,
+      y: 0.42,
+    };
+  },
+  eyes: [],
+  // A step each time the legs swing apart.
+  action: (d) => clamp01(d.apart[0] / 0.5),
+};
+
+const candle: OneHandedPuppet = {
+  hands: 1,
+  id: 'candle',
+  name: 'Candle',
+  checks: [
+    { measure: (d) => d.bend[0], range: [0, 0.3], margin: 0.35, weight: 1.5, hint: 'Point one finger straight up' },
+    {
+      measure: (d) => Math.min(d.bend[1], d.bend[2], d.bend[3]),
+      range: [0.55, 1],
+      margin: 0.4,
+      weight: 1.5,
+      hint: 'Fold your other fingers down',
+    },
+    { measure: (d) => d.pointing, range: [0, 0.6], margin: 0.6, hint: 'Hold your finger up to the sky' },
+  ],
+  pose: () => ({
+    ...openHand(),
+    fingers: { index: straight(), middle: folded(), ring: folded(), little: folded() },
+    thumb: { touch: FINGER_JOINTS.middle[1] },
+    fan: 0.6,
+    turn: 0.05,
+    y: 0.78,
+  }),
+  eyes: [],
+};
+
+const tree: OneHandedPuppet = {
+  hands: 1,
+  id: 'tree',
+  name: 'Tree',
+  checks: [
+    { measure: (d) => d.pointing, range: [0, 0.5], margin: 0.5, weight: 1.5, hint: 'Hold your hand up high' },
+    { measure: spread, range: [0.2, Math.PI], margin: 0.12, weight: 1.5, hint: 'Spread your fingers wide like branches' },
+    // Every branch right out, from the knuckle: two fingers up and two half folded is not a tree.
+    { measure: (d) => Math.max(...d.curl), range: [0, 0.2], margin: 0.25, weight: 1.5, hint: 'Stretch all your fingers out' },
+  ],
+  pose: (action) => ({
+    ...openHand(),
+    thumb: { out: 1 },
+    fan: 2.3,
+    // Swaying in the wind.
+    turn: -0.05 + 0.12 * (action - 0.5),
+    y: 0.82,
+    size: 0.2,
+  }),
+  eyes: [],
+};
+
 /**
  * Two hands whose thumb tips meet at (x, y): the right hand as posed, the left its mirror image, so the pair is
  * symmetrical. The right hand appears on the left of the picture, as the camera faces the visitor.
@@ -239,46 +308,16 @@ const thumbsHooked: Check<PairDescription> = {
   hint: 'Hook your thumbs together',
 };
 
-const bird: PairPuppet = {
-  hands: 2,
-  id: 'bird',
-  name: 'Bird',
-  checks: [
-    thumbsHooked,
-    { measure: both((d) => Math.max(...d.bend), 'max'), range: [0, 0.35], margin: 0.35, hint: 'Stretch your fingers out straight' },
-    // Fingers together and out to the sides are what tell a bird from a butterfly.
-    { measure: both((d) => Math.max(...d.apart), 'max'), range: [0, 0.2], margin: 0.15, hint: 'Hold your fingers together like wings' },
-    {
-      measure: both((d) => Math.abs(d.pointing - Math.PI / 2), 'max'),
-      range: [0, 0.45],
-      margin: 0.45,
-      weight: 1.5,
-      hint: 'Stretch your wings out to the sides',
-    },
-  ],
-  pose: (action) => {
-    const right: Pose = {
-      ...openHand(),
-      fingers: { index: straight(0.05), middle: straight(0.05), ring: straight(0.05), little: straight(0.05) },
-      thumb: { out: 2.2 },
-      fan: 0,
-      turn: -Math.PI / 2 + 0.3 * (action - 0.5),
-    };
-    return hooked(right, 0.667, 0.42);
-  },
-  // The hooked thumbs are the head.
-  eyes: ([first]) => [mix(first!, [[3, 1], [4, 1.2], [2, 0.4]])],
-};
-
 const butterfly: PairPuppet = {
   hands: 2,
   id: 'butterfly',
   name: 'Butterfly',
   checks: [
     thumbsHooked,
-    { measure: both((d) => Math.max(...d.bend), 'max'), range: [0, 0.4], margin: 0.35, hint: 'Stretch your fingers out straight' },
+    // Straight fingers are what tell a butterfly from a heart, whose curled fingers also look spread.
+    { measure: both((d) => Math.max(...d.bend), 'max'), range: [0, 0.4], margin: 0.35, weight: 1.5, hint: 'Stretch your fingers out straight' },
     {
-      measure: both((d) => (d.apart[0] + d.apart[1] + d.apart[2]) / 3, 'min'),
+      measure: both(spread, 'min'),
       range: [0.17, Math.PI],
       margin: 0.1,
       hint: 'Spread your fingers wide like wings',
@@ -293,8 +332,57 @@ const butterfly: PairPuppet = {
   eyes: () => [],
 };
 
-export const ONE_HANDED: readonly OneHandedPuppet[] = [rabbit, duck, dog, swan, spider];
-export const TWO_HANDED: readonly PairPuppet[] = [bird, butterfly];
+/**
+ * Turns `pose` until its index fingertip is straight above (or below) its thumb tip, so that two mirrored
+ * hands can meet at both. Searches by halving, between `from` and `to`.
+ */
+function lineUp(pose: Pose, from: number, to: number): Pose {
+  const gap = (turn: number) => {
+    const points = modelHand({ ...pose, turn });
+    return points[TIP.index]!.x - points[TIP.thumb]!.x;
+  };
+  let [lo, hi] = [from, to];
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if (Math.sign(gap(mid)) === Math.sign(gap(lo))) lo = mid;
+    else hi = mid;
+  }
+  return { ...pose, turn: (lo + hi) / 2 };
+}
+
+const heart: PairPuppet = {
+  hands: 2,
+  id: 'heart',
+  name: 'Heart',
+  checks: [
+    { measure: (pair) => pair.thumbs, range: [0, 0.45], margin: 0.5, weight: 2, hint: 'Touch your thumbs together at the bottom' },
+    { measure: (pair) => pair.fingertips, range: [0, 0.45], margin: 0.5, weight: 2, hint: 'Touch your fingertips together at the top' },
+    { measure: both((d) => d.bend[0], 'min'), range: [0.2, 1], margin: 0.2, hint: 'Curve your fingers round' },
+  ],
+  pose: (action) => {
+    // Seen edge-on, so the fingers curl round towards the other hand in the picture, and the thumbs point down.
+    const curled = (more: number): FingerPose => ({ knuckle: 0.55 + more, curl: 0.75 + more });
+    const right = lineUp(
+      {
+        ...openHand(),
+        fingers: { index: curled(0), middle: curled(0.15), ring: curled(0.3), little: curled(0.45) },
+        thumb: { out: 2.75, forward: 0.5 },
+        fan: 0,
+        side: Math.PI / 2,
+        // A heartbeat: a little bigger, then back.
+        size: 0.17 * (1 + 0.05 * action),
+      },
+      -0.6,
+      1.2,
+    );
+    return hooked(right, 0.667, 0.75);
+  },
+  // No eyes: it glows from inside instead, drawn by the wall.
+  eyes: () => [],
+};
+
+export const ONE_HANDED: readonly OneHandedPuppet[] = [rabbit, dog, duck, spider, walker, candle, tree];
+export const TWO_HANDED: readonly PairPuppet[] = [butterfly, heart];
 /** Every puppet, in the order the cards show them. */
 export const PUPPETS: readonly Puppet[] = [...ONE_HANDED, ...TWO_HANDED];
 

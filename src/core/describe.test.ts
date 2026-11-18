@@ -9,6 +9,15 @@ describe('describePose', () => {
     expect(describePose(modelHand(fist())).bend.every((b) => b > 0.7)).toBe(true);
   });
 
+  it('counts a finger bent at the knuckle as curled, though its upper joints are straight', () => {
+    const pose = openHand();
+    pose.fingers.ring = { knuckle: 0.9, curl: 0 };
+    const d = describePose(modelHand(pose));
+    expect(d.bend[2]).toBeLessThan(0.1);
+    expect(d.curl[2]).toBeGreaterThan(0.2);
+    expect(d.curl[1]).toBeLessThan(0.1);
+  });
+
   it('measures how close the thumb is to each fingertip, in palm lengths', () => {
     const pose: Pose = { ...openHand(), thumb: { touch: TIP.index } };
     const { touch } = describePose(modelHand(pose));

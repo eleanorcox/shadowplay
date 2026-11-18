@@ -6,9 +6,10 @@ Versions are numbered v1, v2 and so on, each with a git tag of the same name. Ne
 
 ## Unreleased
 
-- Four more puppets, making seven: the swan (the arm is its neck) and the spider (two eyes, wiggling legs in the demonstration) for one hand, and the bird and the butterfly for two hands with hooked thumbs. The butterfly grows feelers when it comes alive.
+- Six more puppets, making nine. Animals: the spider (hand hanging down, two eyes) and the butterfly (two hands, thumbs hooked; it grows feelers). Things: the walker (two fingers walking; it becomes a little person with a head), the candle (a flame lights on your fingertip), the tree (leaves grow on your fingers) and the heart (two hands; it glows and beats).
 - Two hands making a puppet together cast one shadow and share one hint.
-- The cards shrink to fit all seven across the wall, and the demonstration plays through every puppet.
+- The cards shrink to fit all nine across the wall, and the demonstration plays through every puppet.
+- Folding a finger no longer counts as spreading it, so a half-made rabbit is not mistaken for a tree.
 
 ## v1: the first wall (18 November 2026)
 

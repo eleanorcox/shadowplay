@@ -10,7 +10,16 @@ google-chrome --headless=new --hide-scrollbars --window-size=1600,900 --virtual-
 
 For the waiting screen, open `/` with `--use-fake-device-for-media-stream --use-fake-ui-for-media-stream`, which gives a camera that never sees a hand.
 
-## 18 November 2026: seven puppets
+## 18 November 2026: things as well as animals
+
+| Scene | Picture |
+| --- | --- |
+| `?demo=candle`: a flame lights on the fingertip | ![](2026-11-18-candle.jpg) |
+| `?demo=tree`: the arm is the trunk; leaves grow on the branches | ![](2026-11-18-tree.jpg) |
+| `?demo=walker`: once alive, the arm goes and it grows a head | ![](2026-11-18-walker.jpg) |
+| `?demo=heart`: two hands; the inside glows and beats | ![](2026-11-18-heart.jpg) |
+
+## 18 November 2026: seven puppets (the swan and the bird were taken out again; see decision 12)
 
 | Scene | Picture |
 | --- | --- |

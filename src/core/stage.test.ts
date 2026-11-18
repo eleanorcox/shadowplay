@@ -94,7 +94,7 @@ describe('Stage', () => {
     const stage = new Stage();
     expect(stage.suggestion).toBe('rabbit');
     hold(stage, [rabbit()], 1.5, 0);
-    expect(stage.suggestion).toBe('duck');
+    expect(stage.suggestion).toBe('dog');
   });
 
   describe('hints', () => {
@@ -113,7 +113,8 @@ describe('Stage', () => {
       const first = stage.hands[0]!.hint;
       // A different mistake on the same puppet does not replace the hint at once.
       const other = oneHanded('rabbit').pose(0);
-      other.turn = Math.PI;
+      other.thumb = { out: 0.8 };
+      other.fingers.index = { knuckle: 0, curl: 0.45 };
       time = hold(stage, [modelHand(other)], 0.5, time);
       expect(stage.hands[0]!.hint).toBe(first);
     });
@@ -146,11 +147,17 @@ describe('Stage', () => {
       expect(stage.made.has('butterfly')).toBe(true);
     });
 
-    it('a bird wins over the dogs each of its hands looks like on its own', () => {
+    it('a butterfly wins over the trees each of its hands looks like on its own', () => {
       const stage = new Stage();
-      hold(stage, puppetHands(puppet('bird'), 0), 1.5, 0);
-      expect(stage.pairs[0]?.alive).toBe('bird');
-      expect(stage.made.has('dog')).toBe(false);
+      hold(stage, puppetHands(puppet('butterfly'), 0), 1.5, 0);
+      expect(stage.pairs[0]?.alive).toBe('butterfly');
+      expect(stage.made.has('tree')).toBe(false);
+    });
+
+    it('a heart is one puppet made by two hands', () => {
+      const stage = new Stage();
+      hold(stage, puppetHands(puppet('heart'), 0), 1.5, 0);
+      expect(stage.pairs[0]?.alive).toBe('heart');
     });
 
     it('two people making their own puppets are left as two puppets', () => {

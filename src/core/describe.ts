@@ -5,9 +5,14 @@ import { angleBetween, dist, FINGER_JOINTS, FINGERS, sub, TIP, WRIST, type Landm
 export interface Description {
   /** For index, middle, ring and little: 0 straight to 1 folded, from the two joints above the knuckle. */
   bend: [number, number, number, number];
+  /** Like `bend`, but counting the knuckle too: 0 for a finger straight out from the palm. */
+  curl: [number, number, number, number];
   /** From the thumb tip to each fingertip, index to little. */
   touch: [number, number, number, number];
-  /** The angle between neighbouring fingers: index and middle, middle and ring, ring and little. */
+  /**
+   * How far apart neighbouring fingers are spread, as angles across the palm: index and middle, middle and ring,
+   * ring and little. Curling a finger does not change it.
+   */
   apart: [number, number, number];
   /** Which way the hand points in the picture, wrist to middle fingertip: 0 straight up, π/2 sideways, π down. */
   pointing: number;
@@ -20,8 +25,19 @@ export interface Description {
   mouth: number;
 }
 
+const cross = (a: Landmark, b: Landmark): Landmark => ({ x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x });
+
+/** `v` with the part along `normal` taken away: its shadow on the plane `normal` stands up from. */
+function flatten(v: Landmark, normal: Landmark): Landmark {
+  const n2 = normal.x * normal.x + normal.y * normal.y + normal.z * normal.z || 1;
+  const k = (v.x * normal.x + v.y * normal.y + v.z * normal.z) / n2;
+  return { x: v.x - normal.x * k, y: v.y - normal.y * k, z: v.z - normal.z * k };
+}
+
 /** Straight is 0; fully folded at both upper joints is about this much. */
 const FOLDED = 2.2;
+/** Folded at the knuckle as well: a fist. */
+const WHOLE_FIST = 3.4;
 
 export function describePose(points: readonly Landmark[]): Description {
   const at = (i: number) => points[i]!;
@@ -33,13 +49,21 @@ export function describePose(points: readonly Landmark[]): Description {
     return Math.min(1, total / FOLDED);
   }) as Description['bend'];
 
+  const curl = FINGERS.map((finger, i) => {
+    const [k, m] = FINGER_JOINTS[finger].map(at) as [Landmark, Landmark];
+    return Math.min(1, (angleBetween(sub(k, at(WRIST)), sub(m, k)) + bend[i]! * FOLDED) / WHOLE_FIST);
+  }) as Description['curl'];
+
   const touch = FINGERS.map((finger) => dist(at(TIP.thumb), at(TIP[finger])) / palm) as Description['touch'];
 
-  const direction = (finger: (typeof FINGERS)[number]) => {
-    const [k, , , t] = FINGER_JOINTS[finger];
-    return sub(at(t), at(k));
+  // Spread is sideways movement across the palm, so each finger's first bone is flattened onto the palm before
+  // the angles are measured: a finger curling towards the palm then does not look spread.
+  const normal = cross(sub(at(FINGER_JOINTS.index[0]), at(WRIST)), sub(at(FINGER_JOINTS.little[0]), at(WRIST)));
+  const across = (finger: (typeof FINGERS)[number]) => {
+    const [k, m] = FINGER_JOINTS[finger];
+    return flatten(sub(at(m), at(k)), normal);
   };
-  const apart = [0, 1, 2].map((i) => angleBetween(direction(FINGERS[i]!), direction(FINGERS[i + 1]!))) as Description['apart'];
+  const apart = [0, 1, 2].map((i) => angleBetween(across(FINGERS[i]!), across(FINGERS[i + 1]!))) as Description['apart'];
 
   // The middle finger leans least in a relaxed hand, so it gives the fairest direction.
   const tips = at(TIP.middle);
@@ -57,7 +81,7 @@ export function describePose(points: readonly Landmark[]): Description {
 
   const mouth = dist(at(TIP.ring), at(TIP.little)) / palm;
 
-  return { bend, touch, apart, pointing, thumbAbove, mouth };
+  return { bend, curl, touch, apart, pointing, thumbAbove, mouth };
 }
 
 /** Two hands together, for two-handed puppets. The same whichever order the tracker lists them in. */
@@ -66,6 +90,8 @@ export interface PairDescription {
   hands: [Description, Description];
   /** How close the thumbs are: from either thumb tip to the nearest part of the other thumb, in palm lengths. */
   thumbs: number;
+  /** From one index fingertip to the other, in palm lengths: the top of a heart. */
+  fingertips: number;
 }
 
 const THUMB_PARTS = [2, 3, 4];
@@ -78,5 +104,6 @@ export function describePair(a: readonly Landmark[], b: readonly Landmark[]): Pa
   return {
     hands: [describePose(first), describePose(second)],
     thumbs: Math.min(reach(first, second), reach(second, first)) / palm,
+    fingertips: dist(first[TIP.index]!, second[TIP.index]!) / palm,
   };
 }

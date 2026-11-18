@@ -25,10 +25,17 @@ describe('checkScore', () => {
 });
 
 describe('the puppets', () => {
-  it('are the rabbit, duck, dog, swan and spider for one hand, and the bird and butterfly for two', () => {
-    expect(ONE_HANDED.map((p) => p.id)).toEqual(['rabbit', 'duck', 'dog', 'swan', 'spider']);
-    expect(TWO_HANDED.map((p) => p.id)).toEqual(['bird', 'butterfly']);
-    expect(PUPPETS).toHaveLength(7);
+  it('are animals and things: seven for one hand, and the butterfly and the heart for two', () => {
+    expect(ONE_HANDED.map((p) => p.id)).toEqual(['rabbit', 'dog', 'duck', 'spider', 'walker', 'candle', 'tree']);
+    expect(TWO_HANDED.map((p) => p.id)).toEqual(['butterfly', 'heart']);
+    expect(PUPPETS).toHaveLength(9);
+  });
+
+  it('turning a puppet upside down makes a different one: the rabbit walks, the tree hangs as a spider', () => {
+    for (const [up, down] of [['rabbit', 'walker'], ['tree', 'spider']] as const) {
+      const flipped = { ...oneHanded(up).pose(0), turn: Math.PI };
+      expect(recognise(describeHand(flipped))[0]!.puppet.id).toBe(down);
+    }
   });
 });
 
@@ -45,6 +52,13 @@ describe('recognising puppets', () => {
       }
     });
   }
+
+  it('a rabbit with its folded fingers half open is not a tree', () => {
+    const pose = oneHanded('rabbit').pose(0);
+    pose.fingers.ring = { knuckle: 0.5, curl: 0.3 };
+    pose.fingers.little = { knuckle: 0.5, curl: 0.3 };
+    expect(score(describeHand(pose), oneHanded('tree')).score).toBeLessThan(COUNTS);
+  });
 
   it('a fist and a relaxed open hand are no puppet', () => {
     for (const pose of [...variants(fist()), ...variants(openHand())]) {
@@ -88,15 +102,30 @@ describe('recognising two-handed puppets', () => {
     expect(recognisePair(describePair(rabbit, duck))[0]!.score).toBeLessThan(COUNTS);
   });
 
-  it('two dogs facing each other are not a bird: the thumbs are not hooked', () => {
-    const left = modelHand({ ...oneHanded('dog').pose(0), x: 0.95 });
-    const right = modelHand({ ...oneHanded('dog').pose(0), hand: 'left', turn: Math.PI / 2, x: 0.35 });
+  it('two trees side by side are not a butterfly: the thumbs do not touch', () => {
+    const left = modelHand({ ...oneHanded('tree').pose(0), x: 0.4 });
+    const right = modelHand({ ...oneHanded('tree').pose(0), hand: 'left', x: 1.0 });
     expect(recognisePair(describePair(left, right))[0]!.score).toBeLessThan(COUNTS);
+  });
+
+  it('a heart with its fingertips apart at the top is told to bring them together', () => {
+    const [a, b] = puppetHands(puppet('heart'), 0);
+    // Tip the second hand outwards about its thumb tip, as a heart opens at the top.
+    const pivot = b![4]!;
+    const [c, sn] = [Math.cos(0.6), Math.sin(0.6)];
+    const opened = b!.map((p) => ({
+      x: pivot.x + (p.x - pivot.x) * c - (p.y - pivot.y) * sn,
+      y: pivot.y + (p.x - pivot.x) * sn + (p.y - pivot.y) * c,
+      z: p.z,
+    }));
+    const [best] = recognisePair(describePair(a!, opened));
+    expect(best!.puppet.id).toBe('heart');
+    expect(best!.hint).toMatch(/fingertips/i);
   });
 
   it('a butterfly with its thumbs apart is told to hook them together', () => {
     const [a, b] = puppetHands(puppet('butterfly'), 0);
-    const apart = b!.map((p) => ({ ...p, x: p.x + 0.12 }));
+    const apart = b!.map((p) => ({ ...p, x: p.x + 0.25 }));
     const [best] = recognisePair(describePair(a!, apart));
     expect(best!.puppet.id).toBe('butterfly');
     expect(best!.hint).toMatch(/thumbs/i);

@@ -11,7 +11,7 @@ Something that teaches you to make hand shadow puppets: it shows you a shape, wa
 1. You walk up to a softly lit wall. A shadow hand is playing on it, turning into a rabbit, then a duck, then a dog.
 2. You hold up your own hand and its shadow appears. Cards along the bottom show the puppets you can make: how to hold your hand, and the shadow it makes.
 3. As you get close to one, its card lights up and the wall says what to change.
-4. When you have it, the puppet comes alive: the dog's mouth opens and it barks when you move your little finger, the bird flaps when you move your hands.
+4. When you have it, the puppet comes alive: the dog's mouth opens and it barks when you move your little finger, the butterfly flaps when you move your hands.
 
 ## Where it comes from
 

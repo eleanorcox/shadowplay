@@ -21,8 +21,9 @@ const resting: Keyframe = { hands: () => [modelHand(restingPose())], hold: 0.8 }
 const chatter = (t: number) => (t < 0.8 ? 0 : 0.5 - 0.5 * Math.cos((t - 0.8) * Math.PI * 2 * 1.6));
 
 function puppetKeyframe(p: Puppet): Keyframe {
-  const moves = p.hands === 2 || !!p.action || p.id === 'spider';
-  if (!moves && p.hands === 1) {
+  // The rabbit and the candle have nothing to do; the rest walk, wiggle, sway, beat or open their mouths.
+  const still = p.id === 'rabbit' || p.id === 'candle';
+  if (still && p.hands === 1) {
     return { hands: (t) => [modelHand({ ...p.pose(0), turn: p.pose(0).turn + 0.06 * Math.sin(t * 2.2) })], hold: 3 };
   }
   // Ends still, so the move away starts from where the hands are.

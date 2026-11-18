@@ -13,7 +13,7 @@ export { STAGE_TIMES } from './performer';
 const SAME_HAND = 0.3;
 /**
  * A pair wins its hands even when one of them matches a one-handed puppet slightly better on its own: hooked
- * thumbs are deliberate, and a bird's hands are each a perfect dog.
+ * thumbs are deliberate, and each of a butterfly's hands is, on its own, a perfect tree.
  */
 const PAIR_EDGE = 0.1;
 /** How much of each new position is taken; lower is smoother but lags. */
@@ -160,7 +160,7 @@ export class Stage {
 
   /**
    * A pair claims its two hands while it is alive, or while it matches better than either hand does alone, so
-   * a bird's hands are not also two dogs (see PAIR_EDGE). Each hand belongs to at most one pair; the best pairs choose first.
+   * a butterfly's hands are not also two trees (see PAIR_EDGE). Each hand belongs to at most one pair; the best pairs choose first.
    */
   private decide(time: number): void {
     const byId = new Map(this.tracked.map((t) => [t.id, t]));
