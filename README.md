@@ -8,6 +8,8 @@ It is designed as an installation for a gallery or museum: no menus, nothing to 
 
 ![The waiting screen: a shadow rabbit on a lamp-lit wall](docs/screenshots/2026-11-18-waiting.jpg)
 
+See it in motion on the [screencasts page](docs/screencasts.md).
+
 ## Running it
 
 ```sh
