@@ -6,7 +6,9 @@ Versions are numbered v1, v2 and so on, each with a git tag of the same name. Ne
 
 ## Unreleased
 
-Nothing yet.
+- Four more puppets, making seven: the swan (the arm is its neck) and the spider (two eyes, wiggling legs in the demonstration) for one hand, and the bird and the butterfly for two hands with hooked thumbs. The butterfly grows feelers when it comes alive.
+- Two hands making a puppet together cast one shadow and share one hint.
+- The cards shrink to fit all seven across the wall, and the demonstration plays through every puppet.
 
 ## v1: the first wall (18 November 2026)
 

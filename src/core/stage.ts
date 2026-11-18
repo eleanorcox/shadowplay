@@ -1,71 +1,54 @@
-// The stage: follows hands from one camera frame to the next and decides, over time, when a puppet has been held
-// long enough to come alive, when to offer a hint and for how long, what has been made this visit, and whether
-// anybody is there at all. It is given hand points and times in seconds, and never looks at a clock or camera.
-import { describePose } from './describe';
+// The stage: follows hands from one camera frame to the next, pairs them up when two hands are making a puppet
+// together, and keeps track of what has been made this visit and whether anybody is there at all. It is given
+// hand points and times in seconds, and never looks at a clock or camera.
+import { describePair, describePose } from './describe';
 import { lerpPoint, WRIST, type Landmark } from './hand';
-import { PUPPETS, type Puppet, type PuppetId } from './puppets';
-import { COUNTS, recognise } from './recognise';
+import { NEAR, Performer, STAGE_TIMES, type PerformerView } from './performer';
+import { ONE_HANDED, PUPPETS, TWO_HANDED, type OneHandedPuppet, type PairPuppet, type PuppetId } from './puppets';
+import { recognise, recognisePair } from './recognise';
 
-/** How long things take, in seconds. */
-export const STAGE_TIMES = {
-  /** A puppet has to count for this long before it comes alive, so passing shapes do not set it off. */
-  hold: 0.6,
-  /** A live puppet that stops counting lasts this long before it ends, so a wobble does not end it. */
-  letGo: 0.5,
-  /** A hand not seen for this long is gone. */
-  lost: 0.6,
-  /** A hint appears once a puppet has been tried for this long without counting. */
-  hintAfter: 1.2,
-  /** A hint stays at least this long, to be read and acted on. */
-  hintFor: 3,
-  /** Nobody in view for this long: back to the demonstration, and the stars are cleared. */
-  waitAfter: 10,
-  /** How quickly scores follow the hand; longer is steadier and slower. */
-  settle: 0.12,
-};
+export { STAGE_TIMES } from './performer';
 
-/** Below this, a live puppet starts to let go; lower than COUNTS so it does not flicker at the edge. */
-const KEEP = 0.7;
-/** A puppet scoring this much is being tried, and earns a hint. */
-const NEAR = 0.4;
 /** Two sightings this far apart, in picture units, are different hands. */
 const SAME_HAND = 0.3;
+/**
+ * A pair wins its hands even when one of them matches a one-handed puppet slightly better on its own: hooked
+ * thumbs are deliberate, and a bird's hands are each a perfect dog.
+ */
+const PAIR_EDGE = 0.1;
 /** How much of each new position is taken; lower is smoother but lags. */
 const FOLLOW = 0.55;
 
-export interface StageHand {
+export interface StageHand extends PerformerView {
   readonly id: number;
   /** Smoothed hand points, for drawing. */
   readonly points: readonly Landmark[];
-  /** The puppet this hand is nearest to, if it is close enough to be trying. */
-  readonly nearest?: PuppetId;
-  /** The smoothed score for the nearest puppet, 0 to 1. */
-  readonly score: number;
-  readonly alive?: PuppetId;
-  /** Seconds since it came alive. */
-  readonly aliveFor: number;
-  readonly hint?: string;
-  /** What the live puppet is doing (opening its beak), 0 to 1. */
-  readonly action: number;
   /** 1 while the hand is seen, fading to 0 as it is lost. */
   readonly presence: number;
+  /** The other hand, when this hand is part of a two-handed puppet; its own puppet is then set aside. */
+  readonly pairedWith?: number;
+}
+
+export interface StagePair extends PerformerView {
+  /** The two hands, the one further left in the picture first. */
+  readonly ids: readonly [number, number];
 }
 
 interface Tracked {
   id: number;
   points: Landmark[];
-  scores: Map<PuppetId, number>;
-  hints: Map<PuppetId, string | undefined>;
+  /** The points as seen in the latest frame, unsmoothed, for recognising. */
+  raw: readonly Landmark[];
   seenAt: number;
-  leader?: PuppetId;
-  leaderSince: number;
-  countingSince?: number;
-  alive?: PuppetId;
-  aliveSince: number;
-  belowSince?: number;
-  hint?: { text: string; puppet: PuppetId; since: number };
-  action: number;
-  rawAction: number;
+  performer: Performer;
+  pairedWith?: number;
+}
+
+interface Pair {
+  key: string;
+  ids: [number, number];
+  performer: Performer;
+  claimed: boolean;
 }
 
 export class Stage {
@@ -73,32 +56,43 @@ export class Stage {
   /** Puppets made this visit; cleared when everyone has gone. */
   readonly made = new Set<PuppetId>();
   private tracked: Tracked[] = [];
+  private pairMap = new Map<string, Pair>();
   private nextId = 1;
   private time = 0;
   private emptySince?: number = 0;
+  private one: readonly OneHandedPuppet[];
+  private two: readonly PairPuppet[];
 
-  constructor(private puppets: readonly Puppet[] = PUPPETS) {}
+  constructor(puppets = PUPPETS) {
+    this.one = ONE_HANDED.filter((p) => puppets.includes(p));
+    this.two = TWO_HANDED.filter((p) => puppets.includes(p));
+  }
 
   /** The puppet to suggest gently: the first not made yet this visit. */
   get suggestion(): PuppetId | undefined {
-    return this.puppets.find((p) => !this.made.has(p.id))?.id;
+    return [...this.one, ...this.two].find((p) => !this.made.has(p.id))?.id;
   }
 
   get hands(): StageHand[] {
-    return this.tracked.map((t) => {
-      const nearest = t.leader && (t.scores.get(t.leader) ?? 0) >= NEAR ? t.leader : undefined;
-      return {
-        id: t.id,
-        points: t.points,
-        nearest,
-        score: t.leader ? (t.scores.get(t.leader) ?? 0) : 0,
-        alive: t.alive,
-        aliveFor: t.alive ? this.time - t.aliveSince : 0,
-        hint: t.hint?.text,
-        action: t.action,
-        presence: Math.max(0, 1 - Math.max(0, this.time - t.seenAt - 0.1) / (STAGE_TIMES.lost - 0.1)),
-      };
-    });
+    return this.tracked.map((t) => ({
+      ...t.performer.view(this.time),
+      id: t.id,
+      points: t.points,
+      pairedWith: t.pairedWith,
+      ...(t.pairedWith !== undefined ? { nearest: undefined } : {}),
+      presence: Math.max(0, 1 - Math.max(0, this.time - t.seenAt - 0.1) / (STAGE_TIMES.lost - 0.1)),
+    }));
+  }
+
+  /** Pairs of hands making, or trying to make, a two-handed puppet. */
+  get pairs(): StagePair[] {
+    const leftFirst = (ids: [number, number]): [number, number] => {
+      const [a, b] = ids.map((id) => this.tracked.find((t) => t.id === id)!);
+      return a!.points[WRIST]!.x <= b!.points[WRIST]!.x ? ids : [ids[1], ids[0]];
+    };
+    return [...this.pairMap.values()]
+      .filter((p) => p.claimed)
+      .map((p) => ({ ...p.performer.view(this.time), ids: leftFirst(p.ids) }));
   }
 
   /** Takes the hands seen in one camera frame, each as 21 points in picture units. */
@@ -117,13 +111,21 @@ export class Stage {
       }
       if (match) unmatched.delete(match);
       else {
-        match = this.newHand(points, time);
+        match = { id: this.nextId++, points: points.map((p) => ({ ...p })), raw: points, seenAt: time, performer: new Performer() };
         this.tracked.push(match);
       }
-      this.see(match, points, time, dt);
+      match.points = match.points.map((p, i) => lerpPoint(p, points[i]!, FOLLOW));
+      match.raw = points;
+      match.seenAt = time;
+      // Recognise from the raw points: smoothing them would blur a shape that is changing.
+      const description = describePose(points);
+      match.performer.feed(recognise(description, this.one), dt);
+      const alive = this.one.find((p) => p.id === match.performer.alive);
+      match.performer.act(alive?.action ? alive.action(description) : 0, dt);
     }
-    for (const t of this.tracked) this.decide(t, time);
     this.tracked = this.tracked.filter((t) => time - t.seenAt < STAGE_TIMES.lost);
+    this.updatePairs(time, dt);
+    this.decide(time);
 
     if (this.tracked.length > 0) {
       this.emptySince = undefined;
@@ -137,75 +139,55 @@ export class Stage {
     }
   }
 
-  private newHand(points: readonly Landmark[], time: number): Tracked {
-    return {
-      id: this.nextId++,
-      points: points.map((p) => ({ ...p })),
-      scores: new Map(),
-      hints: new Map(),
-      seenAt: time,
-      leaderSince: time,
-      aliveSince: time,
-      action: 0,
-      rawAction: 0,
-    };
-  }
-
-  private see(t: Tracked, points: readonly Landmark[], time: number, dt: number): void {
-    const fresh = t.scores.size === 0;
-    t.points = t.points.map((p, i) => lerpPoint(p, points[i]!, FOLLOW));
-    t.seenAt = time;
-    // Recognise from the raw points: smoothing them would blur a shape that is changing.
-    const description = describePose(points);
-    const follow = 1 - Math.exp(-dt / STAGE_TIMES.settle);
-    for (const match of recognise(description, this.puppets)) {
-      const id = match.puppet.id;
-      const old = t.scores.get(id) ?? match.score;
-      t.scores.set(id, fresh ? match.score : old + (match.score - old) * follow);
-      t.hints.set(id, match.hint);
-    }
-    const alive = t.alive && this.puppets.find((p) => p.id === t.alive);
-    t.rawAction = alive && alive.action ? alive.action(description) : 0;
-    t.action += (t.rawAction - t.action) * (1 - Math.exp(-dt / 0.06));
-  }
-
-  private decide(t: Tracked, time: number): void {
-    // A hand that is out of sight keeps its state until it is lost, so a dropout does not end anything.
-    if (t.seenAt !== time) return;
-    let leader: PuppetId | undefined;
-    let top = -1;
-    for (const [id, s] of t.scores) if (s > top) [leader, top] = [id, s];
-    if (leader !== t.leader) {
-      t.leader = leader;
-      t.leaderSince = time;
-      t.countingSince = undefined;
-    }
-
-    if (t.alive) {
-      if ((t.scores.get(t.alive) ?? 0) < KEEP) {
-        t.belowSince ??= time;
-        if (time - t.belowSince >= STAGE_TIMES.letGo) {
-          t.alive = undefined;
-          t.belowSince = undefined;
+  private updatePairs(time: number, dt: number): void {
+    const ids = new Set(this.tracked.map((t) => t.id));
+    for (const [key, pair] of this.pairMap) if (!ids.has(pair.ids[0]) || !ids.has(pair.ids[1])) this.pairMap.delete(key);
+    if (this.two.length === 0) return;
+    const seen = this.tracked.filter((t) => t.seenAt === time);
+    for (let i = 0; i < seen.length; i++) {
+      for (let j = i + 1; j < seen.length; j++) {
+        const [a, b] = [seen[i]!, seen[j]!];
+        const key = `${Math.min(a.id, b.id)}-${Math.max(a.id, b.id)}`;
+        let pair = this.pairMap.get(key);
+        if (!pair) {
+          pair = { key, ids: [a.id, b.id], performer: new Performer(), claimed: false };
+          this.pairMap.set(key, pair);
         }
-      } else t.belowSince = undefined;
-    } else if (leader && top >= COUNTS) {
-      t.countingSince ??= time;
-      if (time - t.countingSince >= STAGE_TIMES.hold - 1e-9) {
-        t.alive = leader;
-        t.aliveSince = time;
-        t.action = 0;
-        this.made.add(leader);
+        pair.performer.feed(recognisePair(describePair(a.raw, b.raw), this.two), dt);
       }
-    } else t.countingSince = undefined;
+    }
+  }
 
-    // Hints: only while trying and not made; a hint stays up long enough to read unless the puppet changes.
-    const wanted =
-      !t.alive && leader && top >= NEAR && time - t.leaderSince >= STAGE_TIMES.hintAfter ? t.hints.get(leader) : undefined;
-    const current = t.hint;
-    const keep = current && !t.alive && current.puppet === leader && time - current.since < STAGE_TIMES.hintFor;
-    if (keep) return;
-    if (!wanted || !leader) t.hint = undefined;
-    else if (current?.text !== wanted) t.hint = { text: wanted, puppet: leader, since: time };
+  /**
+   * A pair claims its two hands while it is alive, or while it matches better than either hand does alone, so
+   * a bird's hands are not also two dogs (see PAIR_EDGE). Each hand belongs to at most one pair; the best pairs choose first.
+   */
+  private decide(time: number): void {
+    const byId = new Map(this.tracked.map((t) => [t.id, t]));
+    const pairs = [...this.pairMap.values()].sort(
+      (p, q) => Number(!!q.performer.alive) - Number(!!p.performer.alive) || q.performer.top - p.performer.top,
+    );
+    const taken = new Set<number>();
+    for (const pair of pairs) {
+      const [a, b] = pair.ids.map((id) => byId.get(id)!);
+      const top = pair.performer.top;
+      const wins = !!pair.performer.alive || (top >= NEAR && top + PAIR_EDGE >= Math.max(a!.performer.top, b!.performer.top));
+      pair.claimed = wins && !taken.has(a!.id) && !taken.has(b!.id);
+      if (!pair.claimed) {
+        pair.performer.reset(time);
+        continue;
+      }
+      taken.add(a!.id);
+      taken.add(b!.id);
+      // A pair with a hand out of sight keeps its state, so a dropout does not end it.
+      if (a!.seenAt === time && b!.seenAt === time) pair.performer.decide(time, this.made);
+    }
+    for (const t of this.tracked) {
+      const pair = pairs.find((p) => p.claimed && p.ids.includes(t.id));
+      t.pairedWith = pair ? pair.ids.find((id) => id !== t.id) : undefined;
+      if (pair) t.performer.reset(time);
+      // A hand that is out of sight keeps its state until it is lost, so a dropout does not end anything.
+      else if (t.seenAt === time) t.performer.decide(time, this.made);
+    }
   }
 }

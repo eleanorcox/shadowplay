@@ -23,6 +23,6 @@ Run `npm test` and `npm run typecheck` before calling anything done. [docs/testi
 - **Recognition is tested without a camera.** It takes hand points, never the live camera. `src/input/` is the camera adapter and never touches the page.
 - **The camera picture is never drawn, saved or sent** ([decision 7](docs/decisions.md#7-the-camera-picture-is-never-shown-or-kept)). Only hand points leave the adapter.
 - **Feedback is kind.** A hint says what to change ("Lift your thumb up for an ear"), never just "wrong". A puppet counts at 0.8, not 1.
-- A new puppet is an entry in `src/core/puppets.ts` (checks, hints, a model-hand pose, an eye), and the test in `recognise.test.ts` then checks it is recognised as itself and nothing else, for either hand.
+- A new puppet is an entry in `src/core/puppets.ts` (checks, hints, a model-hand pose, its eyes), added to `ONE_HANDED` or `TWO_HANDED`. The tests in `recognise.test.ts` then check it is recognised as itself and nothing else, for either hand; the list of puppets in that file must be updated too. Check the near misses as well: anything above about 0.75 for the wrong puppet is too close.
 - `src/render/` only reads the stage.
 - Words on screen are short; pictures carry the meaning, as many visitors cannot read yet.

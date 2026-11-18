@@ -59,3 +59,24 @@ export function describePose(points: readonly Landmark[]): Description {
 
   return { bend, touch, apart, pointing, thumbAbove, mouth };
 }
+
+/** Two hands together, for two-handed puppets. The same whichever order the tracker lists them in. */
+export interface PairDescription {
+  /** Each hand on its own, the one further left in the picture first. */
+  hands: [Description, Description];
+  /** How close the thumbs are: from either thumb tip to the nearest part of the other thumb, in palm lengths. */
+  thumbs: number;
+}
+
+const THUMB_PARTS = [2, 3, 4];
+
+export function describePair(a: readonly Landmark[], b: readonly Landmark[]): PairDescription {
+  const [first, second] = a[WRIST]!.x <= b[WRIST]!.x ? [a, b] : [b, a];
+  const palm = (dist(first[WRIST]!, first[FINGER_JOINTS.middle[0]]!) + dist(second[WRIST]!, second[FINGER_JOINTS.middle[0]]!)) / 2 || 1;
+  const reach = (from: readonly Landmark[], to: readonly Landmark[]) =>
+    Math.min(...THUMB_PARTS.map((i) => dist(from[TIP.thumb]!, to[i]!)));
+  return {
+    hands: [describePose(first), describePose(second)],
+    thumbs: Math.min(reach(first, second), reach(second, first)) / palm,
+  };
+}

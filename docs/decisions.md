@@ -38,7 +38,8 @@ Template:
 | [7](#7-the-camera-picture-is-never-shown-or-kept) | The camera picture is never shown or kept | 18 Nov 2026 | Decided |
 | [8](#8-a-model-hand-draws-the-lessons-and-the-demo) | A model hand draws the lessons, the demo and the test examples | 18 Nov 2026 | Decided |
 | [9](#9-puppets-are-lists-of-kind-checks) | Puppets are lists of checks, each with a kind hint | 18 Nov 2026 | Decided |
-| [10](#10-first-puppets-rabbit-duck-dog) | First puppets: rabbit, duck, dog | 18 Nov 2026 | Decided |
+| [10](#10-first-puppets-rabbit-duck-dog) | First puppets: rabbit, duck, dog | 18 Nov 2026 | Built |
+| [11](#11-four-more-puppets-including-two-handed-ones) | Four more puppets, including two-handed ones | 18 Nov 2026 | Built |
 
 ## 1. Working name: Shadowplay
 
@@ -129,3 +130,12 @@ Template:
 - **Decision:** Three one-handed puppets that look clearly different from one another: the rabbit (two fingers up for ears, the others folded under the thumb), the duck (fingers straight and together, thumb underneath as the beak) and the dog (fingers straight and pointing sideways for the snout, thumb up as an ear, little finger drops to open the mouth). The duck and the dog have something to do once made: open and close the beak or mouth.
 - **Alternatives considered:** The swan and the snail (harder to tell apart from the hand points alone); the bird and the butterfly (need two hands; they come in a later stage).
 - **What follows from it:** The hand positions are the common versions, written from memory (unchecked against a book on hand shadows).
+
+## 11. Four more puppets, including two-handed ones
+
+- **Date:** 18 November 2026
+- **Status:** Built
+- **What prompted it:** Eleanor asked for more shadow puppets after recording v1.
+- **Decision:** Add the swan and the spider (one hand) and the bird and the butterfly (two hands), making seven. The swan is the duck's hand drooping down from the wrist, so the forearm becomes the neck; telling it from the duck is only a matter of which way the hand points, which turned out easier than decision 10 expected. The spider is a hand hanging down with its fingers spread as legs. The bird and the butterfly both hook the thumbs together; the bird holds its fingers together and out to the sides, the butterfly spreads them and points them up and out. Two hands are paired by the stage: every pair of hands in view is scored against the two-handed puppets, and a pair claims its two hands while it is alive, or while it scores at least as well as either hand alone, less a small edge (0.1) in the pair's favour. The edge is needed because each of the bird's hands is, on its own, a perfect dog. A hand belongs to at most one pair.
+- **Alternatives considered:** The snail and the crocodile (two hands overlapping, which the hand tracker handles badly); the deer (antlers from spread fingers, too close to the butterfly); pairing hands only when their wrists are close (two people can make a butterfly together, and the thumbs check already rules out unrelated hands).
+- **What follows from it:** The timing rules (hold, let go, hints) moved into a `Performer` shared by single hands and pairs. The two-handed puppets have not met real hands: whether MediaPipe tracks two hands well when the thumbs are hooked is unchecked, and is the first thing to try. Stage 4 of the roadmap (two-handed puppets) is mostly done ahead of order.

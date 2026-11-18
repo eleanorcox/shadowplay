@@ -4,11 +4,11 @@ import { PUPPETS } from './puppets';
 import { Stage } from './stage';
 
 describe('the demonstration', () => {
-  it('is one hand of 21 points at any moment', () => {
-    for (const t of [0, 1.3, 7.7, DEMO_LENGTH * 2.5]) {
+  it('is one or two hands of 21 points at any moment', () => {
+    for (let t = 0; t < DEMO_LENGTH; t += 0.7) {
       const hands = demoHands(t);
-      expect(hands).toHaveLength(1);
-      expect(hands[0]).toHaveLength(21);
+      expect([1, 2]).toContain(hands.length);
+      for (const hand of hands) expect(hand).toHaveLength(21);
     }
   });
 
@@ -30,7 +30,7 @@ describe('still scenes', () => {
     for (const p of PUPPETS) {
       const stage = new Stage();
       for (let t = 0; t < 1.5; t += 1 / 30) stage.update(stillHands(p.id)!, t);
-      expect(stage.hands[0]!.alive).toBe(p.id);
+      expect(p.hands === 1 ? stage.hands[0]!.alive : stage.pairs[0]?.alive).toBe(p.id);
     }
   });
 });

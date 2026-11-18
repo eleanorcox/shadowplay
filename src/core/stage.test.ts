@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Landmark } from './hand';
 import { fist, modelHand, type Pose } from './handModel';
-import { puppet } from './puppets';
+import { oneHanded, puppet, puppetHands } from './puppets';
 import { Stage, STAGE_TIMES } from './stage';
 
 /** Camera frames arrive about 30 times a second. */
@@ -15,9 +15,9 @@ function hold(stage: Stage, hands: Landmark[][], seconds: number, from: number):
   return time;
 }
 
-const rabbit = () => modelHand(puppet('rabbit').pose(0));
+const rabbit = () => modelHand(oneHanded('rabbit').pose(0));
 const nearlyRabbit = (): Landmark[] => {
-  const pose: Pose = puppet('rabbit').pose(0);
+  const pose: Pose = oneHanded('rabbit').pose(0);
   pose.thumb = { out: 0.8 };
   return modelHand(pose);
 };
@@ -63,7 +63,7 @@ describe('Stage', () => {
   it('follows a hand that moves, keeping its identity', () => {
     const stage = new Stage();
     let time = 0;
-    const pose = puppet('rabbit').pose(0);
+    const pose = oneHanded('rabbit').pose(0);
     stage.update([modelHand(pose)], (time += FRAME));
     const id = stage.hands[0]!.id;
     for (let i = 0; i < 20; i++) stage.update([modelHand({ ...pose, x: pose.x + i * 0.01 })], (time += FRAME));
@@ -73,7 +73,7 @@ describe('Stage', () => {
 
   it('two hands are two puppets', () => {
     const stage = new Stage();
-    const duck = modelHand({ ...puppet('duck').pose(0), x: 0.3 });
+    const duck = modelHand({ ...oneHanded('duck').pose(0), x: 0.3 });
     hold(stage, [rabbit(), duck], 1.5, 0);
     expect(stage.hands.map((h) => h.alive).sort()).toEqual(['duck', 'rabbit']);
     expect(new Set(stage.hands.map((h) => h.id)).size).toBe(2);
@@ -112,7 +112,7 @@ describe('Stage', () => {
       let time = hold(stage, [nearlyRabbit()], STAGE_TIMES.hintAfter + 0.2, 0);
       const first = stage.hands[0]!.hint;
       // A different mistake on the same puppet does not replace the hint at once.
-      const other = puppet('rabbit').pose(0);
+      const other = oneHanded('rabbit').pose(0);
       other.turn = Math.PI;
       time = hold(stage, [modelHand(other)], 0.5, time);
       expect(stage.hands[0]!.hint).toBe(first);
@@ -128,11 +128,45 @@ describe('Stage', () => {
 
   it('a live duck opens its beak as the hand opens', () => {
     const stage = new Stage();
-    const duck = puppet('duck');
+    const duck = oneHanded('duck');
     let time = hold(stage, [modelHand(duck.pose(0))], 1.5, 0);
     expect(stage.hands[0]!.action).toBeLessThan(0.2);
     time = hold(stage, [modelHand(duck.pose(1))], 0.5, time);
     expect(stage.hands[0]!.alive).toBe('duck');
     expect(stage.hands[0]!.action).toBeGreaterThan(0.7);
+  });
+
+  describe('two-handed puppets', () => {
+    it('two hands making a butterfly are one puppet, not two', () => {
+      const stage = new Stage();
+      hold(stage, puppetHands(puppet('butterfly'), 0), 1.5, 0);
+      expect(stage.pairs).toHaveLength(1);
+      expect(stage.pairs[0]!.alive).toBe('butterfly');
+      expect(stage.hands.every((h) => h.alive === undefined && h.pairedWith !== undefined)).toBe(true);
+      expect(stage.made.has('butterfly')).toBe(true);
+    });
+
+    it('a bird wins over the dogs each of its hands looks like on its own', () => {
+      const stage = new Stage();
+      hold(stage, puppetHands(puppet('bird'), 0), 1.5, 0);
+      expect(stage.pairs[0]?.alive).toBe('bird');
+      expect(stage.made.has('dog')).toBe(false);
+    });
+
+    it('two people making their own puppets are left as two puppets', () => {
+      const stage = new Stage();
+      const duck = modelHand({ ...oneHanded('duck').pose(0), x: 0.3 });
+      hold(stage, [rabbit(), duck], 1.5, 0);
+      expect(stage.pairs).toHaveLength(0);
+      expect(stage.hands.map((h) => h.alive).sort()).toEqual(['duck', 'rabbit']);
+    });
+
+    it('when the hands part, the pair ends and each hand is its own again', () => {
+      const stage = new Stage();
+      let time = hold(stage, puppetHands(puppet('butterfly'), 0), 1.5, 0);
+      time = hold(stage, [rabbit()], 2, time);
+      expect(stage.pairs).toHaveLength(0);
+      expect(stage.hands[0]!.alive).toBe('rabbit');
+    });
   });
 });

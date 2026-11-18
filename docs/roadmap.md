@@ -11,7 +11,7 @@ As of 18 November 2026:
 | 1, a rabbit on the wall | Done; recorded as v1 |
 | 2, the installation loop | Software mostly built ahead of plan; needs real hands, children and kiosk set-up |
 | 3, puppets that come alive | Not started |
-| 4, two-handed puppets | Not started |
+| 4, two-handed puppets | Bird and butterfly built ahead of order; not yet tried with real hands |
 | 5, real shadows with a projector | Needs a projector |
 
 Facts that shape the order:
@@ -42,7 +42,7 @@ The screen is a lamp-lit wall. Your hand's shadow falls on it. Make the rabbit a
 
 *Status, 18 November 2026: the duck, the dog, the cards with stars and a closeness bar, hints, the waiting-screen demonstration and the camera reconnecting were built alongside stage 1, since they were cheap once the core existed. Still to do: recordings of real hands as test examples, trying it with children, and kiosk set-up on the installation computer.*
 
-The duck and the dog join the rabbit. Cards along the bottom show all three; the one you are nearest to lights up and says what to change. Nobody in view for a while, and the wall plays a demonstration and clears the stars.
+The duck and the dog join the rabbit (and, since, the swan and the spider). Cards along the bottom show them all; the one you are nearest to lights up and says what to change. Nobody in view for a while, and the wall plays a demonstration and clears the stars.
 
 - **Shows:** what a visitor with no instructions does.
 - **Decides:** how forgiving recognition has to be, after trying it with children.
@@ -53,6 +53,8 @@ The duck and the dog join the rabbit. Cards along the bottom show all three; the
 Each puppet has something to do once made, and a little scene: grass grows under the rabbit, the duck quacks as its beak opens, the dog barks. Sound, off by default, as galleries are often shared spaces.
 
 ### Stage 4: two-handed puppets
+
+*Status, 18 November 2026: the bird and the butterfly are built, with hands paired by the stage ([decision 11](decisions.md#11-four-more-puppets-including-two-handed-ones)). Still to find out: whether the tracker keeps both hands when the thumbs are hooked.*
 
 The bird and the butterfly (thumbs hooked together, fingers flapping), perhaps the deer. Hands are paired by how close they are.
 

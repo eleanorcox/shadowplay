@@ -10,7 +10,16 @@ google-chrome --headless=new --hide-scrollbars --window-size=1600,900 --virtual-
 
 For the waiting screen, open `/` with `--use-fake-device-for-media-stream --use-fake-ui-for-media-stream`, which gives a camera that never sees a hand.
 
-## 18 November 2026: the first wall
+## 18 November 2026: seven puppets
+
+| Scene | Picture |
+| --- | --- |
+| `?demo=swan`: the arm is the neck | ![](2026-11-18-swan.jpg) |
+| `?demo=spider`: two eyes on the back of the hand | ![](2026-11-18-spider.jpg) |
+| `?demo=bird`: two hands, the hooked thumbs make the head | ![](2026-11-18-bird.jpg) |
+| `?demo=butterfly`: two hands; it grows feelers when it comes alive | ![](2026-11-18-butterfly.jpg) |
+
+## 18 November 2026: the first wall (v1)
 
 | Scene | Picture |
 | --- | --- |
