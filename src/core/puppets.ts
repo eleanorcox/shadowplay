@@ -42,6 +42,8 @@ const rabbit: Puppet = {
       measure: (d) => Math.max(d.bend[0], d.bend[1]),
       range: [0, 0.3],
       margin: 0.35,
+      // The ears are what make it a rabbit rather than a fist.
+      weight: 1.5,
       hint: 'Stand two fingers up straight for the ears',
     },
     {
