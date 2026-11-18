@@ -14,6 +14,7 @@ Every idea so far, each with the smallest version worth building. Sizes are roug
 | Real shadows with a projector | L | projector, webcam |
 | A shadow theatre | L | projector |
 | Make up your own puppet | M | webcam |
+| A sign and a quiet-hours mode | S | none |
 
 ## Recognise one puppet
 
@@ -51,3 +52,7 @@ Several people, a story read out, and each scene asks for a puppet. When it appe
 ## Make up your own puppet
 
 Hold any shape; it is saved as a new puppet with a name you give it, and others can learn it.
+
+## A sign and a quiet-hours mode
+
+A printed sign beside the installation: what it does, in pictures, and that the camera picture is never shown or kept. A setting that dims the wall and stops the demo outside opening hours, so the screen is not burning in all night.
