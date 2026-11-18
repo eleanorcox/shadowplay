@@ -12,6 +12,12 @@ We build this test-first: a failing test before every change in behaviour and ev
 | Drawing | Does the shadow look like a shadow? Is the eye in the right place? | By eye, with fixed scenes (below), and screenshots kept in `docs/screenshots/` |
 | The camera and the real room | Lighting, distance, children's hands | Trying it, and recording hand points as new test examples |
 
+## What exists today
+
+- 41 tests in seven files, run with Vitest by `npm test`. They cover the model hand, describing a pose, recognising and hinting each puppet for either hand at several sizes, the stage over time, the demonstration (a full loop makes every puppet, recognised by a real stage), the still scenes, and the camera adapter's units. `examples.test.ts` checks every recording in `src/core/examples/` against its file name.
+- Nothing tests the drawing; it is checked with fixed scenes and [screenshots](screenshots/README.md).
+- There are no recordings of real hands yet.
+
 ## Fixed scenes
 
 `?demo` runs the wall with the model hand instead of the camera. `?demo=rabbit` (or `duck`, `dog`, `fist`) holds one pose still, so a screenshot is the same every time.

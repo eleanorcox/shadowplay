@@ -1,0 +1,15 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #3a2416;
+}
+
+#wall {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  /* Visitors never use a pointer; a cursor on the wall would only be in the way. */
+  cursor: none;
+}

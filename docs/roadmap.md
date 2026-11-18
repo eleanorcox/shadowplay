@@ -8,8 +8,8 @@ As of 18 November 2026:
 
 | Stage | Status |
 | --- | --- |
-| 1, a rabbit on the wall | In progress |
-| 2, the installation loop | Not started |
+| 1, a rabbit on the wall | Built; waiting to be tried with real hands |
+| 2, the installation loop | Software mostly built ahead of plan; needs real hands, children and kiosk set-up |
 | 3, puppets that come alive | Not started |
 | 4, two-handed puppets | Not started |
 | 5, real shadows with a projector | Needs a projector |
@@ -30,6 +30,8 @@ Facts that shape the order:
 
 ### Stage 1: a rabbit on the wall
 
+*Status, 18 November 2026: built and tested on model-hand examples, and screenshots taken ([screenshots](screenshots/README.md)). Not yet tried in front of a real camera, so the thresholds are unchecked.*
+
 The screen is a lamp-lit wall. Your hand's shadow falls on it. Make the rabbit and it comes alive: an eye opens and blinks.
 
 - **Shows:** whether recognising a puppet from hand points works, and whether a shadow drawn from points looks enough like a shadow.
@@ -37,6 +39,8 @@ The screen is a lamp-lit wall. Your hand's shadow falls on it. Make the rabbit a
 - **Includes:** the project set-up; the model hand; describing a pose; the rabbit's checks and hints; a stage that tracks hands over time and decides when a puppet is held long enough to come alive; drawing shadows; the camera adapter copied from the aquarium; a demo mode with no camera (`?demo`) for trying it and for screenshots; a recorder that saves hand points as test examples.
 
 ### Stage 2: the installation loop
+
+*Status, 18 November 2026: the duck, the dog, the cards with stars and a closeness bar, hints, the waiting-screen demonstration and the camera reconnecting were built alongside stage 1, since they were cheap once the core existed. Still to do: recordings of real hands as test examples, trying it with children, and kiosk set-up on the installation computer.*
 
 The duck and the dog join the rabbit. Cards along the bottom show all three; the one you are nearest to lights up and says what to change. Nobody in view for a while, and the wall plays a demonstration and clears the stars.
 

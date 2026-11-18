@@ -19,8 +19,10 @@ model hand ──┘ (demo mode, the waiting-screen demo, and tests)
   - `stage.ts`: follows hands from frame to frame, smooths their scores, decides when a puppet has been held long enough to come alive, which hint to show and for how long, which puppets have been made this visit, and whether anybody is there.
   - `demo.ts`: the demonstration choreography: model-hand poses over time, moving from one puppet to the next.
 - **`src/input/`** is the camera adapter, copied from the aquarium. It turns MediaPipe's output into hand points in **picture units**: 0 to 1 down the picture, and the same scale across, so a square in the world is a square in the numbers (MediaPipe's own x and y are not the same scale unless the picture is square). It never touches the page.
-- **`src/render/`** draws the wall: the lamp light, the shadows, the eyes, the cards and hints. It only reads the stage.
-- **`src/main.ts`** wires them together and runs the frame loop.
+- **`src/render/`** draws the wall. It only reads the stage.
+  - `handShape.ts`: a hand as a solid shape from its 21 points (forearm, padded palm, rounded fingers), used for the shadows and the cards.
+  - `wall.ts`: the lamp light, each hand's shadow (drawn solid, then laid on softened so overlaps do not darken), the eye of a live puppet (a hole in the shadow that opens and blinks), the words a duck or dog says, hints, the cards and the invitation.
+- **`src/main.ts`** wires them together and runs the frame loop. While nobody is there, a second stage watches the demonstration, so the demo hand comes alive exactly as a visitor's would.
 
 ## Rules
 

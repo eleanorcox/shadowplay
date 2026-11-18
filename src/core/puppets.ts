@@ -103,7 +103,7 @@ const duck: Puppet = {
     y: 0.55,
   }),
   // Just behind the beak, at the top of the head.
-  eye: [[5, 2], [6, 1], [0, 0.6]],
+  eye: [[5, 2], [9, 1.5], [6, 1]],
   action: (d) => clamp01((Math.min(d.touch[0], d.touch[1]) - 0.25) / 0.35),
 };
 
@@ -137,7 +137,7 @@ const dog: Puppet = {
     y: 0.55,
   }),
   // Above the nose, in front of the ear.
-  eye: [[5, 1.5], [6, 1], [2, 0.8]],
+  eye: [[5, 1], [9, 1.2], [6, 1.3]],
   action: (d) => clamp01((d.mouth - 0.45) / 0.35),
 };
 
